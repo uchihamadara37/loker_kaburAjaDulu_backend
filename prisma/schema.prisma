@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// generator client {
+//   provider = "prisma-client-js"
+//   output   = "../generated/prisma"
+// }
+
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  nama             String
+  email            String     @unique
+  password         String
+  foto_profile     String? // URL ke GCS
+  role             Role       @default(USER_BIASA)
+  linkLinkedIn     String?
+  lowonganDiposting Lowongan[] @relation("LowonganOlehHrd")
+  kosDiposting     Kos[]      @relation("KosOlehUser") // HRD juga bisa post Kos
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model Lowongan {
+  id                 String            @id @default(uuid())
+  hrd_yang_post_id   String
+  hrd                User              @relation("LowonganOlehHrd", fields: [hrd_yang_post_id], references: [id])
+  nama_perusahaan    String
+  latitude           Float
+  longitude          Float
+  alamat             String
+  deskripsi_lowongan String            @db.Text
+  rentang_gaji       String // "1200-1800 EU /month"
+  jenisPenempatan    JenisPenempatan
+  jumlah_jam_kerja   String // "8 hours"
+  waktu_posting      DateTime          @default(now())
+  contact_email      String // email dari yang memposting atau email lain
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model Kos {
+  id                      String   @id @default(uuid())
+  pemilik_id              String // User yang memposting (bisa HRD atau User lain jika diperluas)
+  pemilik                 User     @relation("KosOlehUser", fields: [pemilik_id], references: [id])
+  nama_kos                String
+  latitude                Float
+  longitude               Float
+  alamat                  String
+  harga_perbulan          Float
+  harga_dp                Float?
+  mata_uang_yang_dipakai  String // "USD", "GBP", "EUR"
+  fasilitas               String // Prisma akan handle ini sebagai JSON di MySQL jika tidak ada native support
+  foto_kos                String // Array of URLs ke GCS
+  kontak                  String?
+  email                   String? // email pemilik kos
+  deskripsi               String   @db.Text
+  jumlah_kamar_tersedia   Int
+  waktu_post              DateTime @default(now())
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+enum Role {
+  HRD
+  USER_BIASA
+}
+
+enum JenisPenempatan {
+  WFA // Work From Anywhere
+  WFH // Work From Home
+  WFO // Work From Office
+  HYBRID
+}
