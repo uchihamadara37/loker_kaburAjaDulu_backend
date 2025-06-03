@@ -1,0 +1,26 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/loker-backend', '.' ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/loker-backend' ]
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'loker-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/loker-backend'
+      - '--region'
+      - 'asia-southeast2'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'DATABASE_URL=${_DATABASE_URL},JWT_SECRET=${_JWT_SECRET},GCS_BUCKET_NAME=${_GCS_BUCKET_NAME},GCP_PROJECT_ID=${_GCP_PROJECT_ID},GCP_CLIENT_EMAIL=${_GCP_CLIENT_EMAIL},GCP_PRIVATE_KEY=${_GCP_PRIVATE_KEY}'
+images:
+  - 'gcr.io/$PROJECT_ID/loker-backend'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
