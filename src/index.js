@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors()); // Enable CORS untuk semua origin
+app.use(cors()); // Enable CORS untuk semua origin o
 app.use(express.json()); // Untuk parsing application/json
 app.use(express.urlencoded({ extended: true })); // Untuk parsing application/x-www-form-urlencoded
 
